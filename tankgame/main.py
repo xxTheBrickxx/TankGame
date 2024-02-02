@@ -195,7 +195,7 @@ fps = 60
 tanklist = []
 ogtank = {
     "image": "ogtank.png",
-    "speed": 20,
+    "speed": 5,
     "hp": 100,
     "bulletspeed": 10,
     "bulletdamage": 25,
@@ -203,11 +203,14 @@ ogtank = {
 }
 greenmonstertank = {
   "image" : "greenmonstertank.png",
-  "speed" : 1,
+  "speed" : 10,
   "hp" : 200,
   "bulletspeed" : 20,
   "bulletdamage" : 50,
   "reloadtime" : 2
+}
+littletank = {
+  
 }
 
 
