@@ -12,7 +12,7 @@ class Tank:
       statsdict,
       x,
       y,
-      angle,
+      angle,                         
       id,
   ):
     self.x = x
@@ -194,6 +194,7 @@ fps = 60
 
 tanklist = []
 ogtank = {
+    "name" : "og tank",
     "image": "ogtank.png",
     "speed": 5,
     "hp": 100,
@@ -202,6 +203,7 @@ ogtank = {
     "reloadtime": 1
 }
 greenmonstertank = {
+  "name" : "monster tank",
   "image" : "greenmonstertank.png",
   "speed" : 10,
   "hp" : 200,
@@ -210,15 +212,54 @@ greenmonstertank = {
   "reloadtime" : 2
 }
 littletank = {
-  
+  "name" : "little tank",
+  "image" : "little tank.png",
+  "speed" : 15,
+  "hp" : 50,
+  "bulletspeed" : 20,
+  "bulletdamage" : 10,
+  "reloadtime" : 1
 }
+longgraytank= {
+  "name" : "The Grey Guy",
+  "image" : "long gray tank.png",
+  "speed" : 15,
+  "hp" : 50,
+  "bulletspeed" : 20,
+  "bulletdamage" : 10,
+  "reloadtime" : 1
+}
+mediumtank = {
+  "name" : "The Myth",
+  "image" : "medium tank.png",
+  "speed" : 15,
+  "hp" : 50,
+  "bulletspeed" : 20,
+  "bulletdamage" : 10,
+  "reloadtime" : 1
+}
+thebigtank = {
+  "name" : "Godzilla",
+  "image" : "thebigtank.png",
+  "speed" : 15,
+  "hp" : 50,
+  "bulletspeed" : 20,
+  "bulletdamage" : 10,
+  "reloadtime" : 1
+}
+tankselectmat = [[ogtank,greenmonstertank,littletank],[longgraytank,mediumtank,thebigtank]]
 
+
+
+def tankfunction(tankwanted, tankwanted2):
+  return tankwanted, tankwanted2
 
 #self,x,y,speed,angle,img,hp,id,bulletspeed=10,bulletdamage=25,reloadtime=1
 def gamestartmenu(surface):
-  startscreen = True
-  while startscreen:
-    WIN.fill(pygame.Color(0, 0, 0))
+  while True:
+
+
+    surface.fill(pygame.Color(0, 0, 0))
     font = pygame.font.Font("DTM-Mono.otf", 28)
     text = font.render("Press space to begin", True, (255, 255, 255))
     text_rect = text.get_rect(center=(screen_w / 2, screen_h / 2))
@@ -228,27 +269,89 @@ def gamestartmenu(surface):
       if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
           return("done")
       quitfunction(event)
+def tankselect(surface):
+  tankselecty1 = 0
+  tankselectx1 = 0
+  tankselecty2 = 0
+  tankselectx2 = 0
 
-def tankbattle():
+  p1tf = False
+  p2tf = False
+
+  while True:
+
+
+    #color is (148,148,148)
+    #screen_w = 1050
+    #screen_h = 450
+    surface.fill(pygame.Color(140,140,140))
+    font = pygame.font.Font("DTM-Mono.otf", 42)
+    text = font.render("select tank:", True, (30, 125, 20))
+    text_rect = text.get_rect(center=(screen_w / 2, screen_h / 10))
+    surface.blit(text, text_rect)
+     
+    for i in range(len(tankselectmat[0])):
+      for j in range(len(tankselectmat)):
+        tanki = pygame.image.load(tankselectmat[j][i]["image"])
+        surface.blit(tanki,((screen_w - 400)/3 * (i+1.5) - (tanki.get_width()/2),100 * (j+2) - (tanki.get_height()/2)))
+        # deals with if (tankselectx = i and tankselecty = j)) blit rectangle
+        
+    
+    pygame.display.update()
+    for event in pygame.event.get():
+      if event.type == pygame.QUIT:
+        pygame.quit()
+        sys.exit()
+      if event.type == pygame.KEYDOWN:
+
+        if event.key == ord("w") and tankselecty1 == 0:
+          tankselecty1 += 1
+        if event.key == ord("a") and tankselectx1 >= 1:
+          tankselectx1 -= 1
+        if event.key == ord("s") and tankselecty1 ==1:
+          tankselecty1 -= 1
+        if event.key == ord("d") and tankselectx1 <= 1:
+          tankselectx1 += 1
+        if event.key == pygame.K_LSHIFT:
+          p1tf = True
+
+        if event.key == pygame.K_UP and tankselecty2 == 0:
+          tankselecty2 += 1
+        if event.key == pygame.K_DOWN and tankselecty2 == 1:
+          tankselecty2 -= 1
+        if event.key == pygame.K_LEFT and tankselectx2 >= 1:
+          tankselectx2 -= 1
+        if event.key == pygame.K_RIGHT and tankselectx2 <= 1:
+          tankselectx2 += 1
+        if event.key == pygame.K_RSHIFT:
+          p2tf = True
+        if event.key == pygame.K_SPACE:
+          tankwanted = tankselectmat[tankselecty1][tankselectx1]
+          tankwanted2 = tankselectmat[tankselecty2][tankselectx2]
+          return tankwanted , tankwanted2 
+
+      quitfunction(event)
+def tankbattle(surface,tanks):
+
+
 
   pygame.display.set_caption("Battle")
 
   turn = 0
-  
-  tank1 = Tank(ogtank,
+
+  tank1 = Tank(tanks[0],
                250,
                250,
                degreestorad(0),
                0)
-  tank2 = Tank(greenmonstertank,
+  tank2 = Tank(tanks[1],
                750,
                250,
                degreestorad(180),
                1)
-  
+
   tanklist.append(tank1)
   tanklist.append(tank2)
-
   running = True
   while running:
     clock.tick(fps)
@@ -313,7 +416,7 @@ def tankbattle():
     if turn == 2:
       tank1.angle -= degreestorad(1)
 
-    WIN.fill(pygame.Color("#ECD796"))
+    surface.fill(pygame.Color("#ECD796"))
 
     if tank1.alive:
       tank1.movetank()
@@ -328,16 +431,16 @@ def tankbattle():
     if not tank1.alive:
       for b in tank1.bulletlist:
         b.speed = 0
-      draw_gameover2(WIN)
+      draw_gameover2(surface)
       running = False
     if not tank2.alive:
       for b in tank2.bulletlist:
         b.speed = 0
-      draw_gameover(WIN)
+      draw_gameover(surface)
       running = False
 
-    tank1.draw(WIN)
-    tank2.draw(WIN)
+    tank1.draw(surface)
+    tank2.draw(surface)
     pygame.display.update()
 
   while True:
@@ -354,14 +457,14 @@ def tankbattle():
                                    (161, 153, 153))
     prespacetext_rect = prespace.get_rect(center=(screen_w / 2,
                                                   screen_h / 2 + 50))
-    WIN.blit(prespace, prespacetext_rect)
+    surface.blit(prespace, prespacetext_rect)
     pygame.display.update()
 
 
 
 while True:
   gamestartmenu(WIN)
-  print(tankbattle())
+  print(tankbattle(WIN,tankselect(WIN)))
 pygame.quit()
 sys.exit()
 
