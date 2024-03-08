@@ -32,7 +32,11 @@ class Tank:
     self.turn = 0
     self.alive = True
     self.bulletlist = []
-
+    self.rtime = statsdict["reloadtime"] * 60
+    self.shootpossibility = True
+    self.reloadpercent = 1
+    self.shootsfx = pygame.mixer.Sound("Tankshootsfx.mp3")
+    self.deadsfx = pygame.mixer.Sound("Tankdiesfx.wav")
   def hpbar(self, surface):
     hpremain = self.hp / self.maxhp
     if self.alive:
@@ -50,9 +54,8 @@ class Tank:
 
     if self.hp <= 0:
       self.currentimg = pygame.image.load("Crater.png")
-      print("crater")
-      print(self.id)
       self.alive = False
+      self.deadsfx.play()
     surface.blit(self.currentimg,
                  (self.x - int(self.currentimg.get_width() / 2),
                   self.y - int(self.currentimg.get_height() / 2 - 13)))
@@ -64,10 +67,10 @@ class Tank:
 
     tank_rect = self.currentimg.get_rect(center=(self.x, self.y + 13))
     pygame.draw.rect(surface, pygame.Color(255, 0, 0), tank_rect)
-  def takeinput(self):
-    for event in pygame.event.get:
-      if event.type == pygame.KEYDOWN:
-  
+
+  def takeinput(self, event):
+    if event.type == pygame.KEYDOWN:
+      if self.id == 0:
         if event.key == ord("w"):
           self.moveforward = 1
         if event.key == ord("a"):
@@ -77,9 +80,47 @@ class Tank:
         if event.key == ord("d"):
           self.turnright = 1
         if event.key == pygame.K_LSHIFT:
-          if self.alive:
+          if self.alive and self.shootpossibility:
             bullet1 = Bullet(hlp.bulletstartoffsetx(self.x, self.angle),
-                             hlp.bulletstartoffsety(self.y, self.angle) + 13, 10,self.angle, self)
+                            hlp.bulletstartoffsety(self.y, self.angle) + 13,
+                            10, self.angle, self)
+
+            self.shoot(bullet1)
+      if self.id == 1:
+        if event.key == pygame.K_UP:
+          self.moveforward = 1
+        if event.key == pygame.K_DOWN:
+          self.movebackward = -1
+        if event.key == pygame.K_LEFT:
+          self.turnleft = -1
+        if event.key == pygame.K_RIGHT:
+          self.turnright = 1
+        if event.key == pygame.K_RSHIFT:
+          if self.alive and self.shootpossibility:
+            bullet2 = Bullet(hlp.bulletstartoffsetx(self.x, self.angle),
+                              hlp.bulletstartoffsety(self.y, self.angle) + 13,
+                              10, self.angle, self)
+            self.shoot(bullet2)
+
+    if event.type == pygame.KEYUP:
+      if self.id == 0:
+        if event.key == ord("a"):
+          self.turnleft = 0
+        if event.key == ord("d"):
+          self.turnright = 0
+        if event.key == ord("w"):
+          self.moveforward = 0
+        if event.key == ord("s"):
+          self.movebackward = 0
+      if self.id == 1:
+        if event.key == pygame.K_UP:
+          self.moveforward = 0
+        if event.key == pygame.K_DOWN:
+          self.movebackward = 0
+        if event.key == pygame.K_LEFT:
+          self.turnleft = 0
+        if event.key == pygame.K_RIGHT:
+          self.turnright = 0
   def movetank(self):
     # move body of this into draw, and have a self.moveforwardorback property
     self.moveforwardorback = self.moveforward + self.movebackward
@@ -91,16 +132,39 @@ class Tank:
       self.y += math.sin(self.angle) * self.speed
 
   def shoot(self, bullet):
+    self.shootsfx.play()
     bullet.damage = self.bulletdamage
     self.bulletlist.append(bullet)
-
+    self.rtime = 0
+  def reload(self,surface):
+    self.rtime += 1
+    if self.rtime >= self.reloadtime * 60:
+      self.shootpossibility = True
+    else:
+      self.shootpossibility = False
+      
+    
+    if self.alive:
+      if 1 >= self.rtime/ (self.reloadtime * 60):
+        self.reloadpercent = self.rtime / (self.reloadtime * 60)
+      else:
+        self.reloadpercent = 1
+      reloadrect = pygame.draw.rect(
+          surface, (128, 0, 0), pygame.Rect(self.x - 28, self.y - 35, 50, 10))
+      hpbaryellowrect = pygame.draw.rect(
+          surface, (234,255,58),
+          pygame.Rect(self.x - 28, self.y - 35, self.reloadpercent * 50, 10))
+        
+      
   def tankturn(self):
     self.turn = self.turnleft + self.turnright
     if self.turn == -1:
-      self.angle += hlp.degreestorad(1) * self.speed
+      self.angle += hlp.degreestorad(1) * self.speed/2
 
     if self.turn == 1:
-      self.angle -= hlp.degreestorad(1) * self.speed
+      self.angle -= hlp.degreestorad(1) * self.speed/2
+
+  
 
 class Bullet:
 
@@ -114,7 +178,7 @@ class Bullet:
     self.originalimg = pygame.image.load("tank bulet.png")
     self.currentimg = pygame.transform.scale(self.originalimg, (35 / 6, 13 / 6))
     self.imgsteptwo = pygame.transform.rotate(self.currentimg, hlp.radtodegrees(self.angle))
-
+    self.bullethitsfx = pygame.mixer.Sound("Tankhitsfx.wav")
   def draw(self, surface, tanklist):
     self.x += math.cos(self.angle) * self.speed
     self.y += math.sin(self.angle) * -self.speed
@@ -136,7 +200,7 @@ class Bullet:
     self.speed = 0
     tankhit.hp -= self.owner.bulletdamage
     print(tankhit.hp)
-
+    self.bullethitsfx.play()
   def drawhitbox(self, surface):
     bullet_rect = self.imgsteptwo.get_rect(center=(self.x, self.y))
     print(bullet_rect)
