@@ -36,13 +36,17 @@ class Tank:
     self.shootpossibility = True
     self.reloadpercent = 1
     self.shootsfx = pygame.mixer.Sound("Tankshootsfx.mp3")
+    
     self.deadsfx = pygame.mixer.Sound("Tankdiesfx.wav")
+    
+    self.mask = pygame.mask.from_surface(self.currentimg)
+    self.maskimage = self.mask.to_surface()
   def hpbar(self, surface):
     hpremain = self.hp / self.maxhp
     if self.alive:
-      hpredbarrect = pygame.draw.rect(
+      pygame.draw.rect(
           surface, (128, 0, 0), pygame.Rect(self.x - 28, self.y - 20, 50, 10))
-      hpgreenbarrect = pygame.draw.rect(
+      pygame.draw.rect(
           surface, (30, 143, 58),
           pygame.Rect(self.x - 28, self.y - 20, hpremain * 50, 10))
 
@@ -51,10 +55,16 @@ class Tank:
                                               hlp.radtodegrees(self.angle) - 90)
 
   def draw(self, surface, tanklist):
-
+    self.maskimage = self.mask.to_surface()
+    self.mask = pygame.mask.from_surface(self.currentimg)
+    #surface.blit(self.maskimage,(self.x, self.y))
+     
+    #surface.blit(self.maskimage,((self.x - int(self.currentimg.get_width() / 2),
+                  #self.y - int(self.currentimg.get_height() / 2 - 13))))
     if self.hp <= 0:
       self.currentimg = pygame.image.load("Crater.png")
       self.alive = False
+      self.deadsfx.set_volume(.2)
       self.deadsfx.play()
     surface.blit(self.currentimg,
                  (self.x - int(self.currentimg.get_width() / 2),
@@ -132,6 +142,7 @@ class Tank:
       self.y += math.sin(self.angle) * self.speed
 
   def shoot(self, bullet):
+    self.shootsfx.set_volume(0.2)
     self.shootsfx.play()
     bullet.damage = self.bulletdamage
     self.bulletlist.append(bullet)
@@ -149,9 +160,9 @@ class Tank:
         self.reloadpercent = self.rtime / (self.reloadtime * 60)
       else:
         self.reloadpercent = 1
-      reloadrect = pygame.draw.rect(
+      pygame.draw.rect(
           surface, (128, 0, 0), pygame.Rect(self.x - 28, self.y - 35, 50, 10))
-      hpbaryellowrect = pygame.draw.rect(
+      pygame.draw.rect(
           surface, (234,255,58),
           pygame.Rect(self.x - 28, self.y - 35, self.reloadpercent * 50, 10))
         
@@ -179,18 +190,30 @@ class Bullet:
     self.currentimg = pygame.transform.scale(self.originalimg, (35 / 6, 13 / 6))
     self.imgsteptwo = pygame.transform.rotate(self.currentimg, hlp.radtodegrees(self.angle))
     self.bullethitsfx = pygame.mixer.Sound("Tankhitsfx.wav")
+    self.bullethitsfx.set_volume(0.2)
+    self.mask = pygame.mask.from_surface(self.imgsteptwo)
+    
+    self.olist = 0
   def draw(self, surface, tanklist):
     self.x += math.cos(self.angle) * self.speed
     self.y += math.sin(self.angle) * -self.speed
+    
+    
+   
     if self.speed != 0:
       surface.blit(self.imgsteptwo, (self.x, self.y))
       self.bullethitcheck(tanklist)
 
   def bullethitcheck(self, tanklist):
-    bullet_rect = self.imgsteptwo.get_rect(center=(self.x, self.y + 13))
+    self.masq = pygame.mask.from_surface(self.imgsteptwo)
+    self.mask = self.masq.scale((self.speed,3))
+    
     for tankindex, tank in enumerate(tanklist):
-      tank_rect = tank.currentimg.get_rect(center=(tank.x, tank.y))
-      if tank_rect.collidepoint(self.x, self.y - 13):
+      (self.x - int(self.currentimg.get_width() / 2),
+                  self.y - int(self.currentimg.get_height() / 2))
+      
+      if tank.mask.overlap(self.mask, ((self.x - int(tank.x - (tank.currentimg.get_width() / 2))), self.y - (tank.y - int(tank.currentimg.get_height() / 2  - 13)))):
+        
         if tank.id == self.owner.id:
           break
         print("hit" + str(tankindex))
@@ -200,6 +223,7 @@ class Bullet:
     self.speed = 0
     tankhit.hp -= self.owner.bulletdamage
     print(tankhit.hp)
+    self.bullethitsfx.set_volume(0.2)
     self.bullethitsfx.play()
   def drawhitbox(self, surface):
     bullet_rect = self.imgsteptwo.get_rect(center=(self.x, self.y))
