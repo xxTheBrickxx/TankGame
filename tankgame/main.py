@@ -58,14 +58,16 @@ fps = 60
 frames = 0
 
 tanklist = []
+masklist = []
 ogtank = {
     "name": "og tank",
     "image": "ogtank.png",
     "speed": 2,
     "hp": 1000,
-    "bulletspeed": 1,
+    "bulletspeed": 10,
     "bulletdamage": 250,
-    "reloadtime": 3
+    "reloadtime": 3,
+    "shadow" : "ogtankshadow.bmp"
 }
 greenmonstertank = {
     "name": "monster tank",
@@ -74,7 +76,8 @@ greenmonstertank = {
     "hp": 200,
     "bulletspeed": 20,
     "bulletdamage": 50,
-    "reloadtime": 2
+    "reloadtime": 2,
+    "shadow" : "greenmonstertankshadow.bmp"
 }
 littletank = {
     "name": "little tank",
@@ -83,7 +86,8 @@ littletank = {
     "hp": 50,
     "bulletspeed": 20,
     "bulletdamage": 10,
-    "reloadtime": 1
+    "reloadtime": 1,
+    "shadow" : "little tankshadow.bmp"
 }
 longgraytank = {
     "name": "The Grey Guy",
@@ -92,7 +96,8 @@ longgraytank = {
     "hp": 50,
     "bulletspeed": 20,
     "bulletdamage": 10,
-    "reloadtime": 1
+    "reloadtime": 1,
+    "shadow" : "long gray tankshadow.png"
 }
 mediumtank = {
     "name": "The Myth",
@@ -101,7 +106,8 @@ mediumtank = {
     "hp": 50,
     "bulletspeed": 20,
     "bulletdamage": 10,
-    "reloadtime": 1
+    "reloadtime": 1,
+    "shadow" : "medium tankshadow.bmp"
 }
 thebigtank = {
     "name": "Godzilla",
@@ -110,7 +116,8 @@ thebigtank = {
     "hp": 50,
     "bulletspeed": 20,
     "bulletdamage": 10,
-    "reloadtime": 1
+    "reloadtime": 1,
+    "shadow" : "thebingtankshadow.bmp"
 }
 tankselectmat = [[ogtank, greenmonstertank, littletank],
                  [longgraytank, mediumtank, thebigtank]]
@@ -215,23 +222,28 @@ def tankselect(surface):
 
       quitfunction(event)
 
+gamemusic = pygame.mixer.Sound("Gamemusic.mp3")
 
 def tankbattle(surface, tanks):
-
   pygame.display.set_caption("Battle")
   frames = 0
   turn = 0
 
-  tank1 = Tank(tanks[0], 250, 250, hlp.degreestorad(0), 0)
-  tank2 = Tank(tanks[1], 750, 250, hlp.degreestorad(180), 1)
+  tank1 = Tank(tanks[0], 250, 250, hlp.degreestorad(0), 0, tanklist)
+  tank2 = Tank(tanks[1], 750, 250, hlp.degreestorad(180), 1, tanklist)
 
   tanklist.append(tank1)
   tanklist.append(tank2)
+  tank1.tanklist = tanklist
+  tank2.tanklist = tanklist
   running = True
+  gamemusic.play()
   while running:
+    
+   
+    
     clock.tick(fps)
     frames += 1
-    print(frames)
     for event in pygame.event.get():
       if event.type == pygame.QUIT:
         pygame.quit()
@@ -296,7 +308,9 @@ def tankbattle(surface, tanks):
 
 
 while True:
+  gamemusic.stop()
   gamestartmenu(WIN)
+  pygame.mixer_music.unpause()
   print(tankbattle(WIN, tankselect(WIN)))
 pygame.quit()
 sys.exit()
