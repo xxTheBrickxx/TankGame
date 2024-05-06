@@ -3,7 +3,7 @@ import pygame
 import math
 import sys
 import time
-
+from Minerals import *
 from tank import *
 import helper as hlp
 
@@ -17,7 +17,7 @@ def quitfunction(event):
     pygame.quit()
     sys.exit()
   if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-    pygame.quit()
+    pygame.quit() 
     sys.exit()
 
 
@@ -56,16 +56,35 @@ pygame.display.set_caption("Tanks")
 clock = pygame.time.Clock()
 fps = 60
 frames = 0
-
+LightBrownMineral1 = {
+    "image": "LightBrownMineral1.png",
+    "hp": 100
+}
+LightBrownMineral2 = {
+    "image": "LightBrownMineral2.png",
+    "hp": 75
+}
+LightBrownMineral3 = {
+    "image": "LightBrownMineral3.png",  
+    "hp": 50
+}
+LightBrownMineral4 = {
+    "image": "LightBrownMineral4.png",
+    "hp": 25
+}
+minerallist = [LightBrownMineral1, LightBrownMineral2, LightBrownMineral3, LightBrownMineral4]
+mineralslist = []
 tanklist = []
+masklist = []
 ogtank = {
     "name": "og tank",
     "image": "ogtank.png",
     "speed": 2,
     "hp": 1000,
-    "bulletspeed": 25,
+    "bulletspeed": 10,
     "bulletdamage": 250,
-    "reloadtime": 3
+    "reloadtime": 3,
+    "shadow" : "ogtankshadow.bmp"
 }
 greenmonstertank = {
     "name": "monster tank",
@@ -74,7 +93,8 @@ greenmonstertank = {
     "hp": 200,
     "bulletspeed": 20,
     "bulletdamage": 50,
-    "reloadtime": 2
+    "reloadtime": 2,
+    "shadow" : "greenmonstertankshadow.bmp"
 }
 littletank = {
     "name": "little tank",
@@ -83,7 +103,8 @@ littletank = {
     "hp": 50,
     "bulletspeed": 20,
     "bulletdamage": 10,
-    "reloadtime": 1
+    "reloadtime": 1,
+    "shadow" : "little tankshadow.bmp"
 }
 longgraytank = {
     "name": "The Grey Guy",
@@ -92,7 +113,8 @@ longgraytank = {
     "hp": 50,
     "bulletspeed": 20,
     "bulletdamage": 10,
-    "reloadtime": 1
+    "reloadtime": 1,
+    "shadow" : "long gray tankshadow.png"
 }
 mediumtank = {
     "name": "The Myth",
@@ -101,7 +123,8 @@ mediumtank = {
     "hp": 50,
     "bulletspeed": 20,
     "bulletdamage": 10,
-    "reloadtime": 1
+    "reloadtime": 1,
+    "shadow" : "medium tankshadow.bmp"
 }
 thebigtank = {
     "name": "Godzilla",
@@ -110,7 +133,8 @@ thebigtank = {
     "hp": 50,
     "bulletspeed": 20,
     "bulletdamage": 10,
-    "reloadtime": 1
+    "reloadtime": 1,
+    "shadow" : "thebingtankshadow.bmp"
 }
 tankselectmat = [[ogtank, greenmonstertank, littletank],
                  [longgraytank, mediumtank, thebigtank]]
@@ -139,7 +163,10 @@ def tankselect(surface):
 
   p1tf = False
   p2tf = False
-
+  for b in range(10):
+    randint = random.randint(0, 3)
+    mineral = Minerals(random.randint(0, 1050), random.randint(0, 450), tanklist,  b + 2, minerallist[randint])
+    mineralslist.append(mineral)
   while True:
 
     #color is (148,148,148)
@@ -215,23 +242,60 @@ def tankselect(surface):
 
       quitfunction(event)
 
+gamemusic = pygame.mixer.Sound("Gamemusic.mp3")
 
 def tankbattle(surface, tanks):
-
   pygame.display.set_caption("Battle")
   frames = 0
   turn = 0
-
-  tank1 = Tank(tanks[0], 250, 250, hlp.degreestorad(0), 0)
-  tank2 = Tank(tanks[1], 750, 250, hlp.degreestorad(180), 1)
-
+  true1 = False
+  true2 = False
+  tank1 = Tank(tanks[0], 250, 250, hlp.degreestorad(0), 0, tanklist,mineralslist)
+  tank2 = Tank(tanks[1], 750, 250, hlp.degreestorad(180), 1, tanklist, mineralslist)
+  mineraling = True
+  Michael = 10
+  for b in range(Michael):
+    true1 = True
+    true2 = True
+    randint = random.randint(0, 3)
+    mineral = Minerals(random.randint(0, 1050), random.randint(0, 450), tanklist, b + 2, minerallist[randint])
+    for tank in tanklist:
+      if mineral.mask.overlap(tank.mask, ((mineral.x - (tank.x - int(tank.currentimg.get_width() / 2))), mineral.y - (tank.y - int(tank.currentimg.get_height() / 2 - tank.originalimg.get_width() / 2)))):
+        true1 = False
+    for m in mineralslist:
+      if mineral.mask.overlap(m.mask, (mineral.x - m.x, mineral.y - m.y)):
+        true2 = False
+    if true1 and true2:
+      mineralslist.append(mineral)
+  True1 = False
+  True2 = False
   tanklist.append(tank1)
   tanklist.append(tank2)
+  tank1.tanklist = tanklist
+  tank2.tanklist = tanklist
   running = True
+  gamemusic.set_volume(0.1)
+  gamemusic.play()
+  for b in range(10):
+    True1 = False
+    True2 = False
+    randint = random.randint(0, 3)
+    mineral = Minerals(random.randint(0, 1050), random.randint(0, 450), tanklist, b + 2, minerallist[randint])
+    for tank in tanklist:
+      if not mineral.mask.overlap(tank.mask, ((mineral.x - (tank.x - int(tank.currentimg.get_width() / 2))), mineral.y - (tank.y - int(tank.currentimg.get_height() / 2 - tank.originalimg.get_width() / 2)))):
+        True2 = True
+    for m in mineralslist:
+      if not mineral.mask.overlap(m.mask, (mineral.x - m.x, mineral.y - m.y)):
+        True1 = True
+    if True1 and True2:
+      mineralslist.append(mineral)
+  
   while running:
+    
+   
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
     clock.tick(fps)
     frames += 1
-    print(frames)
     for event in pygame.event.get():
       if event.type == pygame.QUIT:
         pygame.quit()
@@ -254,13 +318,15 @@ def tankbattle(surface, tanks):
     if tank1.alive:
 
       tank1.movetank()
-      tank1.rotate()
       tank1.tankturn()
+      tank1.rotate()
+      
       tank1.reload(WIN)
     if tank2.alive:
       tank2.movetank()
-      tank2.rotate()
       tank2.tankturn()
+      tank2.rotate()
+      
       tank2.reload(WIN)
     if not tank1.alive:
       for b in tank1.bulletlist:
@@ -275,7 +341,10 @@ def tankbattle(surface, tanks):
 
     tank1.draw(surface, tanklist)
     tank2.draw(surface, tanklist)
+    for mineral in mineralslist:
+      mineral.mineraldraw(WIN)
     pygame.display.update()
+    
 
   while True:
     print("done")
@@ -296,7 +365,9 @@ def tankbattle(surface, tanks):
 
 
 while True:
+  gamemusic.stop()
   gamestartmenu(WIN)
+  pygame.mixer_music.unpause()
   print(tankbattle(WIN, tankselect(WIN)))
 pygame.quit()
 sys.exit()
