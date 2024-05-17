@@ -84,7 +84,7 @@ ogtank = {
     "bulletspeed": 10,
     "bulletdamage": 250,
     "reloadtime": 3,
-    "shadow" : "ogtankshadow.bmp"
+    "shadow" : "ogtankshadow.bmp" 
 }
 greenmonstertank = {
     "name": "monster tank",
@@ -141,6 +141,7 @@ tankselectmat = [[ogtank, greenmonstertank, littletank],
 
 
 #self,x,y,speed,angle,img,hp,id,bulletspeed=10,bulletdamage=25,reloadtime=1
+
 def gamestartmenu(surface):
   while True:
     surface.fill(pygame.Color(0, 0, 0))
@@ -163,10 +164,7 @@ def tankselect(surface):
 
   p1tf = False
   p2tf = False
-  for b in range(10):
-    randint = random.randint(0, 3)
-    mineral = Minerals(random.randint(0, 1050), random.randint(0, 450), tanklist,  b + 2, minerallist[randint])
-    mineralslist.append(mineral)
+ 
   while True:
 
     #color is (148,148,148)
@@ -224,7 +222,6 @@ def tankselect(surface):
           tankselectx1 += 1
         if event.key == pygame.K_LSHIFT:
           p1tf = True
-
         if event.key == pygame.K_UP and tankselecty2 == 1:
           tankselecty2 -= 1
         if event.key == pygame.K_DOWN and tankselecty2 == 0:
@@ -253,42 +250,48 @@ def tankbattle(surface, tanks):
   tank1 = Tank(tanks[0], 250, 250, hlp.degreestorad(0), 0, tanklist,mineralslist)
   tank2 = Tank(tanks[1], 750, 250, hlp.degreestorad(180), 1, tanklist, mineralslist)
   mineraling = True
-  Michael = 10
-  for b in range(Michael):
-    true1 = True
-    true2 = True
-    randint = random.randint(0, 3)
-    mineral = Minerals(random.randint(0, 1050), random.randint(0, 450), tanklist, b + 2, minerallist[randint])
-    for tank in tanklist:
-      if mineral.mask.overlap(tank.mask, ((mineral.x - (tank.x - int(tank.currentimg.get_width() / 2))), mineral.y - (tank.y - int(tank.currentimg.get_height() / 2 - tank.originalimg.get_width() / 2)))):
-        true1 = False
-    for m in mineralslist:
-      if mineral.mask.overlap(m.mask, (mineral.x - m.x, mineral.y - m.y)):
-        true2 = False
-    if true1 and true2:
-      mineralslist.append(mineral)
-  True1 = False
-  True2 = False
   tanklist.append(tank1)
   tanklist.append(tank2)
   tank1.tanklist = tanklist
   tank2.tanklist = tanklist
+  tank1.rotate()
+  tank2.rotate()
+  surface.fill(pygame.Color("#ECD796"))
+  tank1.draw(surface, tanklist)
+  tank2.draw(surface, tanklist)
+  pygame.display.update()
+  for b in range(40):
+    while True:
+      surface.fill(pygame.Color("#ECD796"))
+      clock.tick(1)
+      true1 = True
+      true2 = True
+      randint = random.randint(0, 3)
+      mineral = Minerals(random.randint(0, 1050), random.randint(0, 450), tanklist, b + 2, minerallist[randint])
+      mineral.mineraldraw(WIN)
+      for tank in tanklist:
+        tank.draw(WIN, tanklist)
+      for m in mineralslist:
+        m.mineraldraw(WIN)
+      for tank in tanklist:
+        if mineral.mask.overlap(tank.mask, ((mineral.x - (tank.x - int(tank.currentimg.get_width() / 2))), mineral.y - (tank.y - int(tank.currentimg.get_height() / 2 - tank.originalimg.get_width()/2)))):
+          print("mineralcollisionwithtank")
+          true1 = False
+      for m in mineralslist:
+        if mineral.mask.overlap(m.mask, (mineral.x - m.x, mineral.y - m.y)):
+          print("mineralcollisionwithmineral")
+          true2 = False
+      if true1 and true2:
+        mineralslist.append(mineral) 
+        pygame.display.update()
+        break
+      
+        
+  
   running = True
-  gamemusic.set_volume(0.1)
+  gamemusic.set_volume(0.5)
   gamemusic.play()
-  for b in range(10):
-    True1 = False
-    True2 = False
-    randint = random.randint(0, 3)
-    mineral = Minerals(random.randint(0, 1050), random.randint(0, 450), tanklist, b + 2, minerallist[randint])
-    for tank in tanklist:
-      if not mineral.mask.overlap(tank.mask, ((mineral.x - (tank.x - int(tank.currentimg.get_width() / 2))), mineral.y - (tank.y - int(tank.currentimg.get_height() / 2 - tank.originalimg.get_width() / 2)))):
-        True2 = True
-    for m in mineralslist:
-      if not mineral.mask.overlap(m.mask, (mineral.x - m.x, mineral.y - m.y)):
-        True1 = True
-    if True1 and True2:
-      mineralslist.append(mineral)
+  
   
   while running:
     
